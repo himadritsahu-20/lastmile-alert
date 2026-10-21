@@ -1,0 +1,3 @@
+export const severityMeta = { critical: { label: "Critical", color: "text-red-300", bg: "bg-red-950/50" }, high: { label: "High", color: "text-orange-300", bg: "bg-orange-950/50" }, medium: { label: "Medium", color: "text-amber-300", bg: "bg-amber-950/50" } };
+export const getSeverityMeta = (severity = "medium") => severityMeta[severity] || severityMeta.medium;
+export const createAlertId = () => `ALT-${Date.now().toString(36).toUpperCase()}`;

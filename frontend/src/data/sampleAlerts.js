@@ -1,0 +1,7 @@
+export const sampleAlerts = [
+	{ id: "ALT-DEMO-01", type: "flood", severity: "critical", area: "Zone A, District 5", officialText: "OFFICIAL FLOOD WARNING - NDMA\nWater levels are dangerously high and rising fast.", simplifiedText: "FLOOD WARNING: Leave now. Move to high ground or your nearest relief camp. Take medicine, water, and ID. Emergency help: 112.", keyInfo: { what: "Flood / rising water", where: "Zone A, District 5", when: "Within 4 hours", action: "EVACUATE NOW" }, createdAt: "Today, 09:15" },
+	{ id: "ALT-DEMO-02", type: "cyclone", severity: "high", area: "Coastal Region", officialText: "CYCLONE WARNING - INDIA METEOROLOGICAL DEPARTMENT\nA severe cyclonic storm is approaching coastal districts.", simplifiedText: "CYCLONE ALERT: A strong storm is coming. Prepare food, water, medicine, and a torch. Stay away from the sea. Emergency help: 112.", keyInfo: { what: "Severe cyclone", where: "Coastal Region", when: "36 to 48 hours", action: "PREPARE FOR EVACUATION" }, createdAt: "Today, 09:20" },
+	{ id: "ALT-DEMO-03", type: "fire", severity: "medium", area: "District B, Northern Forest Area", officialText: "FOREST FIRE ALERT - STATE FIRE EMERGENCY SERVICES\nAn active wildfire has been detected.", simplifiedText: "FIRE ALERT: A forest fire is spreading near homes. Pack an emergency bag and be ready to leave when officials tell you.", keyInfo: { what: "Forest fire", where: "District B", when: "Monitor updates", action: "BE READY TO LEAVE" }, createdAt: "Today, 09:25" },
+];
+export const SAMPLE_ALERTS = sampleAlerts;
+export default sampleAlerts;

@@ -1,0 +1,3 @@
+export default function NotFound({ onBack }) {
+  return <section className="mx-auto max-w-xl py-24 text-center"><p className="text-sm font-bold uppercase tracking-widest text-orange-400">404 / route unavailable</p><h1 className="mt-4 text-4xl font-black text-white">This alert path does not exist.</h1><button onClick={onBack} className="mt-8 rounded-lg bg-orange-500 px-5 py-3 font-bold text-slate-950 hover:bg-orange-400">Return to dashboard</button></section>;
+}

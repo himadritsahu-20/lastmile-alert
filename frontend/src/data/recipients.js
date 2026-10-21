@@ -1,0 +1,2 @@
+export const recipients = [{ id: "R001", name: "Amit Kumar", zone: "A", channel: "SMS" }, { id: "R002", name: "Priya Sharma", zone: "A", channel: "App" }, { id: "R003", name: "Ravi Das", zone: "B", channel: "SMS" }, { id: "R004", name: "Fatima Begum", zone: "B", channel: "Radio" }];
+export default recipients;

@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LastMile Alert System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        
+        * { font-family: 'Inter', sans-serif; }
+        
+        body {
+            background: #0A0A1A;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .glass {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .glow-red { box-shadow: 0 0 20px rgba(255,58,58,0.3); }
+        .glow-orange { box-shadow: 0 0 20px rgba(255,140,0,0.3); }
+        .glow-green { box-shadow: 0 0 20px rgba(0,200,83,0.3); }
+        .glow-blue { box-shadow: 0 0 20px rgba(0,145,234,0.3); }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .nav-btn {
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-btn.active {
+            border-left: 3px solid #FF3A3A;
+            background: rgba(255,58,58,0.1);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0A0A1A; }
+        ::-webkit-scrollbar-thumb { background: #FF3A3A; border-radius: 3px; }
+
+        .severity-critical { border-left: 4px solid #FF3A3A; }
+        .severity-high { border-left: 4px solid #FF8C00; }
+        .severity-medium { border-left: 4px solid #FFD700; }
+        .severity-low { border-left: 4px solid #00C853; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FF3A3A, #FF8C00);
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255,58,58,0.4);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+<!-- App Container -->
+<div class="flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <div class="w-64 glass border-r border-gray-800 flex flex-col p-4 fixed h-full z-10">
+        
+        <!-- Logo -->
+        <div class="mb-8 mt-2">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center glow-red">
+                    <span class="text-xl">🚨</span>
+                </div>
+                <div>
+                    <div class="font-bold text-white text-lg">LastMile</div>
+                    <div class="text-xs text-gray-400">Alert System</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Indicator -->
+        <div class="glass rounded-lg p-3 mb-6">
+            <div class="flex items-center gap-2">
+                <span class="status-dot bg-green-400 pulse"></span>
+                <span class="text-xs text-green-400">System Online</span>
+            </div>
+            <div class="text-xs text-gray-400 mt-1">All modules active</div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex flex-col gap-1 flex-1">
+            <button onclick="showPage('dashboard')" 
+                class="nav-btn active rounded-lg px-4 py-3 text-left flex items-center gap-3 text-sm" 
+                id="nav-dashboard">
+                <span>📊</span> Dashboard
+            </button>
+            <button onclick="showPage('alert-input')" 
+                class="nav-btn rounded-lg px-4 py-3 text-left flex items-center gap-3 text-sm" 
+                id="nav-alert-input">
+                <span>📝</span> Create Alert
+            </button>
+            <button onclick="showPage('plain-language')" 
+                class="nav-btn rounded-lg px-4 py-3 text-left flex items-center gap-3 text-sm" 
+                id="nav-plain-language">
+                <span>✍️</span> Plain Language
+            </button>
+            <button onclick="showPage('translator')" 
+                class="nav-btn rounded-lg px-4 py-3 text-left flex items-center gap-3 text-sm" 
+                id="nav-translator">
+                <span>🌐</span> Translator
+            </button>
+            <button onclick="showPage('visual')" 
+                class="nav-btn rounded-lg px-4 py-3 text-left flex items-center gap-3 text-sm" 
+                id="nav-visual">
+                <span>🎨</span> Visual Generator
+            </button>
+            <button onclick="showPage('sms')" 
+                class="nav-btn rounded-lg px-4 py-3 text-left flex items-center gap-3 text-sm" 
+                id="nav-sms">
+                <span>📱</span> SMS Simulator
+            </button>
+            <button onclick="showPage('tracker')" 
+                class="nav-btn rounded-lg px-4 py-3 text-left flex items-center gap-3 text-sm" 
+                id="nav-tracker">
+                <span>📡</span> Delivery Tracker
+            </button>
+        </nav>
+
+        <!-- Bottom Info -->
+        <div class="mt-4 text-xs text-gray-500 text-center">
+            v1.0.0 • Hackathon Demo
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="ml-64 flex-1 overflow-y-auto">
+        
+        <!-- Top Bar -->
+        <div class="glass border-b border-gray-800 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+            <div id="page-title" class="text-xl font-bold">Dashboard</div>
+            <div class="flex items-center gap-4">
+                <div class="glass rounded-full px-3 py-1 text-xs text-orange-400">
+                    🔔 3 Active Alerts
+                </div>
+                <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-sm">
+                    A
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE: DASHBOARD -->
+        <div id="page-dashboard" class="p-6">
+            
+            <!-- Stats Row -->
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <div class="glass rounded-xl p-4 glow-red">
+                    <div class="text-3xl font-black text-red-400">3</div>
+                    <div class="text-sm text-gray-400">Active Alerts</div>
+                    <div class="text-xs text-red-400 mt-1">↑ 2 critical</div>
+                </div>
+                <div class="glass rounded-xl p-4 glow-orange">
+                    <div class="text-3xl font-black text-orange-400">12,450</div>
+                    <div class="text-sm text-gray-400">People Reached</div>
+                    <div class="text-xs text-orange-400 mt-1">↑ 94% delivery</div>
+                </div>
+                <div class="glass rounded-xl p-4 glow-green">
+                    <div class="text-3xl font-black text-green-400">8</div>
+                    <div class="text-sm text-gray-400">Languages Active</div>
+                    <div class="text-xs text-green-400 mt-1">↑ All translated</div>
+                </div>
+                <div class="glass rounded-xl p-4 glow-blue">
+                    <div class="text-3xl font-black text-blue-400">98%</div>
+                    <div class="text-sm text-gray-400">Acknowledgement</div>
+                    <div class="text-xs text-blue-400 mt-1">↑ Last 24hrs</div>
+                </div>
+            </div>
+
+            <!-- Active Alerts -->
+            <div class="glass rounded-xl p-5 mb-6">
+                <h2 class="font-bold text-lg mb-4 flex items-center gap-2">
+                    🚨 Active Emergency Alerts
+                </h2>
+                <div class="space-y-3">
+                    <div class="glass rounded-lg p-4 severity-critical flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold text-red-400">🌊 FLOOD WARNING - Zone A</div>
+                            <div class="text-sm text-gray-400">Issued: 2 hours ago • 5,200 recipients</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full pulse">CRITICAL</span>
+                            <button onclick="loadSampleAlert('flood')" class="btn-primary text-xs px-3 py-1 rounded-full">Process</button>
+                        </div>
+                    </div>
+                    <div class="glass rounded-lg p-4 severity-high flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold text-orange-400">🌀 CYCLONE ALERT - Coastal Region</div>
+                            <div class="text-sm text-gray-400">Issued: 5 hours ago • 8,100 recipients</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">HIGH</span>
+                            <button onclick="loadSampleAlert('cyclone')" class="btn-primary text-xs px-3 py-1 rounded-full">Process</button>
+                        </div>
+                    </div>
+                    <div class="glass rounded-lg p-4 severity-medium flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold text-yellow-400">🔥 FIRE ALERT - District B</div>
+                            <div class="text-sm text-gray-400">Issued: 1 hour ago • 2,300 recipients</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">MEDIUM</span>
+                            <button onclick="loadSampleAlert('fire')" class="btn-primary text-xs px-3 py-1 rounded-full">Process</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Row -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="glass rounded-xl p-5">
+                    <h3 class="font-bold mb-4">📈 Delivery Rate (Last 24hrs)</h3>
+                    <canvas id="deliveryChart" height="200"></canvas>
+                </div>
+                <div class="glass rounded-xl p-5">
+                    <h3 class="font-bold mb-4">🌐 Language Distribution</h3>
+                    <canvas id="langChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE: ALERT INPUT -->
+        <div id="page-alert-input" class="p-6 hidden">
+            <div class="max-w-3xl">
+                <h2 class="text-2xl font-bold mb-2">Create Emergency Alert</h2>
+                <p class="text-gray-400 mb-6">Input official emergency alert for processing</p>
+
+                <div class="glass rounded-xl p-6 space-y-4">
+                    
+                    <!-- Alert Type -->
+                    <div>
+                        <label class="text-sm text-gray-400 mb-2 block">Alert Type</label>
+                        <div class="grid grid-cols-4 gap-3">
+                            <button onclick="selectType(this, 'flood')" 
+                                class="type-btn glass rounded-lg p-3 text-center hover:border-blue-500 border border-transparent transition-all">
+                                <div class="text-2xl mb-1">🌊</div>
+                                <div class="text-xs">Flood</div>
+                            </button>
+                            <button onclick="selectType(this, 'cyclone')" 
+                                class="type-btn glass rounded-lg p-3 text-center hover:border-blue-500 border border-transparent transition-all">
+                                <div class="text-2xl mb-1">🌀</div>
+                                <div class="text-xs">Cyclone</div>
+                            </button>
+                            <button onclick="selectType(this, 'earthquake')" 
+                                class="type-btn glass rounded-lg p-3 text-center hover:border-blue-500 border border-transparent transition-all">
+                                <div class="text-2xl mb-1">🏔️</div>
+                                <div class="text-xs">Earthquake</div>
+                            </button>
+                            <button onclick="selectType(this, 'fire')" 
+                                class="type-btn glass rounded-lg p-3 text-center hover:border-blue-500 border border-transparent transition-all">
+                                <div class="text-2xl mb-1">🔥</div>
+                                <div class="text-xs">Fire</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Severity -->
+                    <div>
+                        <label class="text-sm text-gray-400 mb-2 block">Severity Level</label>
+                        <select id="severity" 
+                            class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-red-500 outline-none">
+                            <option value="critical">🔴 Critical - Immediate Action Required</option>
+                            <option value="high">🟠 High - Urgent Response Needed</option>
+                            <option value="medium">🟡 Medium - Prepare and Monitor</option>
+                            <option value="low">🟢 Low - Stay Informed</option>
+                        </select>
+                    </div>
+
+                    <!-- Affected Area -->
+                    <div>
+                        <label class="text-sm text-gray-400 mb-2 block">Affected Area</label>
+                        <input type="text" id="affected-area" 
+                            placeholder="e.g., Zone A, District 5, Coastal Region"
+                            class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-red-500 outline-none">
+                    </div>
+
+                    <!-- Official Alert Text -->
+                    <div>
+                        <label class="text-sm text-gray-400 mb-2 block">Official Alert Text</label>
+                        <textarea id="official-alert" rows="6" 
+                            placeholder="Paste official emergency alert text here..."
+                            class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-red-500 outline-none resize-none"></textarea>
+                        <div class="flex justify-between mt-1">
+                            <span class="text-xs text-gray-500">Official language preserved</span>
+                            <span class="text-xs text-gray-500" id="char-count">0 characters</span>
+                        </div>
+                    </div>
+
+                    <!-- Load Sample -->
+                    <div class="flex gap-3">
+                        <button onclick="loadSampleAlert('flood')" 
+                            class="glass border border-blue-500 text-blue-400 text-sm px-4 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-all">
+                            Load Flood Sample
+                        </button>
+                        <button onclick="loadSampleAlert('cyclone')" 
+                            class="glass border border-orange-500 text-orange-400 text-sm px-4 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-all">
+                            Load Cyclone Sample
+                        </button>
+                    </div>
+
+                    <!-- Submit -->
+                    <button onclick="processAlert()" 
+                        class="btn-primary w-full py-4 rounded-xl font-bold text-lg">
+                        🚀 Process Alert
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE: PLAIN LANGUAGE -->
+        <div id="page-plain-language" class="p-6 hidden">
+            <h2 class="text-2xl font-bold mb-2">Plain Language Processor</h2>
+            <p class="text-gray-400 mb-6">Convert technical alerts to simple, clear language</p>
+
+            <!-- Readability Score -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-black text-red-400" id="original-score">Grade 12</div>
+                    <div class="text-sm text-gray-400">Original Complexity</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-5xl">→</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-black text-green-400" id="simplified-score">Grade 5</div>
+                    <div class="text-sm text-gray-400">Simplified Level</div>
+                </div>
+            </div>
+
+            <!-- Side by Side -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="glass rounded-xl p-5 border-l-4 border-red-500">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="bg-red-500 text-white text-xs px-2 py-1 rounded">OFFICIAL</span>
+                        <span class="text-sm text-gray-400">Original Text</span>
+                    </div>
+                    <div id="original-text-display" class="text-sm text-gray-300 leading-relaxed">
+                        Click "Process Alert" from Create Alert page first, or load a sample below.
+                    </div>
+                </div>
+                <div class="glass rounded-xl p-5 border-l-4 border-green-500">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded">SIMPLIFIED</span>
+                        <span class="text-sm text-gray-400">Plain Language</span>
+                    </div>
+                    <div id="simplified-text-display" class="text-sm text-gray-300 leading-relaxed">
+                        Simplified version will appear here...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Info Cards -->
+            <div class="glass rounded-xl p-5 mb-4">
+                <h3 class="font-bold mb-4">📋 Key Information Extracted</h3>
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="glass rounded-lg p-3">
+                        <div class="text-xs text-gray-400 mb-1">WHAT</div>
+                        <div class="font-semibold text-sm" id="key-what">-</div>
+                    </div>
+                    <div class="glass rounded-lg p-3">
+                        <div class="text-xs text-gray-400 mb-1">WHERE</div>
+                        <div class="font-semibold text-sm" id="key-where">-</div>
+                    </div>
+                    <div class="glass rounded-lg p-3">
+                        <div class="text-xs text-gray-400 mb-1">WHEN</div>
+                        <div class="font-semibold text-sm" id="key-when">-</div>
+                    </div>
+                    <div class="glass rounded-lg p-3">
+                        <div class="text-xs text-gray-400 mb-1">ACTION</div>
+                        <div class="font-semibold text-sm text-red-400" id="key-action">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="loadSampleAndProcess()" 
+                    class="btn-primary px-6 py-3 rounded-xl font-semibold">
+                    Load Sample & Process
+                </button>
+                <button onclick="copyText('simplified-text-display')" 
+                    class="glass border border-gray-600 px-6 py-3 rounded-xl text-sm">
+                    📋 Copy Simplified
+                </button>
+            </div>
+        </div>
+
+        <!-- PAGE: TRANSLATOR -->
+        <div id="page-translator" class="p-6 hidden">
+            <h2 class="text-2xl font-bold mb-2">Multi-Language Translator</h2>
+            <p class="text-gray-400 mb-6">Translate alerts into local languages</p>
+
+            <!-- Source Text -->
+            <div class="glass rounded-xl p-5 mb-6">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded">SOURCE</span>
+                </div>
+                <div id="source-for-translation" class="text-sm text-gray-300">
+                    Load an alert first from "Create Alert" page
+                </div>
+            </div>
+
+            <!-- Language Grid -->
+            <div class="grid grid-cols-4 gap-3 mb-6">
+                <div class="glass rounded-xl p-4 border border-orange-500">
+                    <div class="text-2xl mb-2">🇮🇳</div>
+                    <div class="font-semibold text-sm">Hindi</div>
+                    <div class="text-xs text-gray-400 mt-2" id="trans-hindi">Click translate</div>
+                    <button onclick="translateTo('hindi')" class="mt-3 w-full btn-primary text-xs py-2 rounded-lg">Translate</button>
+                </div>
+                <div class="glass rounded-xl p-4 border border-green-500">
+                    <div class="text-2xl mb-2">🇮🇳</div>
+                    <div class="font-semibold text-sm">Bengali</div>
+                    <div class="text-xs text-gray-400 mt-2" id="trans-bengali">Click translate</div>
+                    <button onclick="translateTo('bengali')" class="mt-3 w-full btn-primary text-xs py-2 rounded-lg">Translate</button>
+                </div>
+                <div class="glass rounded-xl p-4 border border-blue-500">
+                    <div class="text-2xl mb-2">🇮🇳</div>
+                    <div class="font-semibold text-sm">Tamil</div>
+                    <div class="text-xs text-gray-400 mt-2" id="trans-tamil">Click translate</div>
+                    <button onclick="translateTo('tamil')" class="mt-3 w-full btn-primary text-xs py-2 rounded-lg">Translate</button>
+                </div>
+                <div class="glass rounded-xl p-4 border border-purple-500">
+                    <div class="text-2xl mb-2">🇮🇳</div>
+                    <div class="font-semibold text-sm">Telugu</div>
+                    <div class="text-xs text-gray-400 mt-2" id="trans-telugu">Click translate</div>
+                    <button onclick="translateTo('telugu')" class="mt-3 w-full btn-primary text-xs py-2 rounded-lg">Translate</button>
+                </div>
+                <div class="glass rounded-xl p-4 border border-yellow-500">
+                    <div class="text-2xl mb-2">🇪🇸</div>
+                    <div class="font-semibold text-sm">Spanish</div>
+                    <div class="text-xs text-gray-400 mt-2" id="trans-spanish">Click translate</div>
+                    <button onclick="translateTo('spanish')" class="mt-3 w-full btn-primary text-xs py-2 rounded-lg">Translate</button>
+                </div>
+                <div class="glass rounded-xl p-4 border border-red-500">
+                    <div class="text-2xl mb-2">🇫🇷</div>
+                    <div class="font-semibold text-sm">French</div>
+                    <div class="text-xs text-gray-400 mt-2" id="trans-french">Click translate</div>
+                    <button onclick="translateTo('french')" class="mt-3 w-full btn-primary text-xs py-2 rounded-lg">Translate</button>
+                </div>
+                <div class="glass rounded-xl p-4 border border-pink-500">
+                    <div class="text-2xl mb-2">🇸🇦</div>
+                    <div class="font-semibold text-sm">Arabic</div>
+                    <div class="text-xs text-gray-400 mt-2" id="trans-arabic" dir="rtl">Click translate</div>
+                    <button onclick="translateTo('arabic')" class="mt-3 w-full btn-primary text-xs py-2 rounded-lg">Translate</button>
+                </div>
+                <div class="glass rounded-xl p-4 border border-cyan-500">
+                    <div class="text-2xl mb-2">🇲🇾</div>
+                    <div class="font-semibold text-sm">Malay</div>
+                    <div class="text-xs text-gray-400 mt-2" id="trans-malay">Click translate</div>
+                    <button onclick="translateTo('malay')" class="mt-3 w-full btn-primary text-xs py-2 rounded-lg">Translate</button>
+                </div>
+            </div>
+
+            <button onclick="translateAll()" 
+                class="btn-primary px-8 py-3 rounded-xl font-bold">
+                🌐 Translate to ALL Languages
+            </button>
+        </div>
+
+        <!-- PAGE: VISUAL -->
+        <div id="page-visual" class="p-6 hidden">
+            <h2 class="text-2xl font-bold mb-2">Visual Alert Generator</h2>
+            <p class="text-gray-400 mb-6">Generate icon-based and visual versions</p>
+
+            <div class="grid grid-cols-2 gap-6">
+                
+                <!-- Visual Alert Card -->
+                <div class="glass rounded-xl p-5">
+                    <h3 class="font-bold mb-4">🎨 Visual Alert Card</h3>
+                    <canvas id="visual-canvas" width="400" height="400" 
+                        class="w-full rounded-xl border border-gray-700 bg-gray-900"></canvas>
+                    <div class="flex gap-3 mt-4">
+                        <button onclick="generateVisual()" class="btn-primary flex-1 py-2 rounded-lg text-sm font-semibold">
+                            Generate Visual
+                        </button>
+                        <button onclick="downloadCanvas()" class="glass border border-gray-600 flex-1 py-2 rounded-lg text-sm">
+                            ⬇️ Download PNG
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Icon-Based Version -->
+                <div class="glass rounded-xl p-5">
+                    <h3 class="font-bold mb-4">🔣 Icon-Based Version</h3>
+                    <div id="icon-version" class="glass rounded-xl p-6 min-h-48 flex flex-col items-center justify-center text-center">
+                        <div class="text-6xl mb-4" id="main-icon">⚠️</div>
+                        <div class="text-2xl font-black text-red-400 mb-2" id="icon-title">EMERGENCY</div>
+                        <div class="text-sm text-gray-400 mb-4" id="icon-subtitle">Alert Type</div>
+                        <div class="grid grid-cols-3 gap-4 w-full">
+                            <div class="glass rounded-lg p-3 text-center">
+                                <div class="text-2xl">📍</div>
+                                <div class="text-xs mt-1" id="icon-location">Zone A</div>
+                            </div>
+                            <div class="glass rounded-lg p-3 text-center">
+                                <div class="text-2xl">⏰</div>
+                                <div class="text-xs mt-1" id="icon-time">Now</div>
+                            </div>
+                            <div class="glass rounded-lg p-3 text-center">
+                                <div class="text-2xl">🏃</div>
+                                <div class="text-xs mt-1" id="icon-action">Evacuate</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="generateIconVersion()" class="btn-primary w-full mt-4 py-2 rounded-lg text-sm font-semibold">
+                        Generate Icon Version
+                    </button>
+                </div>
+
+                <!-- Color Code Legend -->
+                <div class="glass rounded-xl p-5">
+                    <h3 class="font-bold mb-4">🎨 Severity Color System</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-8 bg-red-500 rounded"></div>
+                            <div>
+                                <div class="font-semibold text-sm">RED - Critical</div>
+                                <div class="text-xs text-gray-400">Evacuate Now - Immediate Danger</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-8 bg-orange-500 rounded"></div>
+                            <div>
+                                <div class="font-semibold text-sm">ORANGE - High</div>
+                                <div class="text-xs text-gray-400">Prepare to Evacuate</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-8 bg-yellow-500 rounded"></div>
+                            <div>
+                                <div class="font-semibold text-sm">YELLOW - Medium</div>
+                                <div class="text-xs text-gray-400">Stay Alert and Monitor</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-8 bg-green-500 rounded"></div>
+                            <div>
+                                <div class="font-semibold text-sm">GREEN - All Clear</div>
+                                <div class="text-xs text-gray-400">Safe to Return</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SMS Visual -->
+                <div class="glass rounded-xl p-5">
+                    <h3 class="font-bold mb-4">📱 SMS Visual Preview</h3>
+                    <div class="bg-gray-900 rounded-xl p-4">
+                        <div class="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700">
+                            <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-xs">🚨</div>
+                            <div>
+                                <div class="text-xs font-semibold">EMERGENCY ALERT</div>
+                                <div class="text-xs text-gray-400">Official Government</div>
+                            </div>
+                        </div>
+                        <div id="sms-preview-visual" class="text-xs text-gray-300 leading-relaxed">
+                            🚨FLOOD-RED|ZONE:A|ACT:EVACUATE|TIME:NOW|📞112
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE: SMS SIMULATOR -->
+        <div id="page-sms" class="p-6 hidden">
+            <h2 class="text-2xl font-bold mb-2">SMS & Low-Bandwidth Simulator</h2>
+            <p class="text-gray-400 mb-6">Test alert delivery under various network conditions</p>
+
+            <div class="grid grid-cols-3 gap-6">
+                
+                <!-- Network Selector -->
+                <div class="glass rounded-xl p-5">
+                    <h3 class="font-bold mb-4">📡 Network Condition</h3>
+                    <div class="space-y-3">
+                        <button onclick="setNetwork('full')" 
+                            class="network-btn w-full glass rounded-lg p-3 text-left flex items-center gap-3 hover:border-green-500 border border-transparent transition-all">
+                            <span class="text-green-400">████</span>
+                            <div>
+                                <div class="text-sm font-semibold">Full Internet</div>
+                                <div class="text-xs text-gray-400">Normal conditions</div>
+                            </div>
+                        </button>
+                        <button onclick="setNetwork('3g')" 
+                            class="network-btn w-full glass rounded-lg p-3 text-left flex items-center gap-3 hover:border-yellow-500 border border-transparent transition-all">
+                            <span class="text-yellow-400">███░</span>
+                            <div>
+                                <div class="text-sm font-semibold">3G Network</div>
+                                <div class="text-xs text-gray-400">Slow connection</div>
+                            </div>
+                        </button>
+                        <button onclick="setNetwork('2g')" 
+                            class="network-btn w-full glass rounded-lg p-3 text-left flex items-center gap-3 hover:border-orange-500 border border-transparent transition-all">
+                            <span class="text-orange-400">██░░</span>
+                            <div>
+                                <div class="text-sm font-semibold">2G Network</div>
+                                <div class="text-xs text-gray-400">Very limited</div>
+                            </div>
+                        </button>
+                        <button onclick="setNetwork('sms')" 
+                            class="network-btn w-full glass rounded-lg p-3 text-left flex items-center gap-3 hover:border-red-500 border border-transparent transition-all">
+                            <span class="text-red-400">█░░░</span>
+                            <div>
+                                <div class="text-sm font-semibold">SMS Only</div>
+                                <div class="text-xs text-gray-400">No internet</div>
+                            </div>
+                        </button>
+                        <button onclick="setNetwork('offline')" 
+                            class="network-btn w-full glass rounded-lg p-3 text-left flex items-center gap-3 hover:border-gray-500 border border-transparent transition-all">
+                            <span class="text-gray-500">░░░░</span>
+                            <div>
+                                <div class="text-sm font-semibold">Offline Relay</div>
+                                <div class="text-xs text-gray-400">Community relay</div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="mt-4 glass rounded-lg p-3">
+                        <div class="text-xs text-gray-400 mb-1">Current Mode</div>
+                        <div class="font-semibold text-green-400" id="current-network">Full Internet</div>
+                        <div class="text-xs text-gray-400 mt-1" id="network-speed">Speed: Unlimited</div>
+                    </div>
+                </div>
+
+                <!-- Phone Mockup -->
+                <div class="glass rounded-xl p-5 flex flex-col items-center">
+                    <h3 class="font-bold mb-4">📱 Message Preview</h3>
+                    
+                    <!-- Phone -->
+                    <div class="bg-gray-900 rounded-3xl p-3 border-2 border-gray-700 w-48">
+                        <div class="bg-gray-800 rounded-2xl overflow-hidden">
+                            <!-- Status Bar -->
+                            <div class="bg-gray-900 px-3 py-1 flex justify-between items-center">
+                                <span class="text-xs">9:41</span>
+                                <span class="text-xs" id="signal-display">▲▲▲▲</span>
+                            </div>
+                            <!-- Screen -->
+                            <div class="p-3 min-h-48 bg-gray-800">
+                                <div class="bg-red-900 rounded-lg p-2 mb-2">
+                                    <div class="text-xs font-bold text-red-300">🚨 EMERGENCY</div>
+                                    <div class="text-xs text-gray-300 mt-1" id="phone-message">
+                                        FLOOD WARNING: Evacuate Zone A immediately. 
+                                        Call 112. Move to high ground NOW.
+                                    </div>
+                                </div>
+                                <div class="text-xs text-gray-500 text-center" id="delivery-time">
+                                    Delivered: Just now
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="simulateSend()" class="btn-primary mt-4 px-6 py-2 rounded-xl text-sm font-semibold">
+                        📤 Simulate Send
+                    </button>
+                </div>
+
+                <!-- SMS Formatter -->
+                <div class="glass rounded-xl p-5">
+                    <h3 class="font-bold mb-4">✉️ SMS Format Builder</h3>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs text-gray-400">Alert Code</label>
+                            <input value="FLOOD-RED" id="sms-code" 
+                                class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm mt-1 outline-none focus:border-red-500 text-white">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400">Zone</label>
+                            <input value="ZONE:A7" id="sms-zone"
+                                class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm mt-1 outline-none focus:border-red-500 text-white">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400">Action</label>
+                            <input value="ACT:EVACUATE-NOW" id="sms-action"
+                                class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm mt-1 outline-none focus:border-red-500 text-white">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400">Emergency Contact</label>
+                            <input value="CALL:112" id="sms-contact"
+                                class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm mt-1 outline-none focus:border-red-500 text-white">
+                        </div>
+                    </div>
+
+                    <div class="glass rounded-lg p-3 mt-4">
+                        <div class="text-xs text-gray-400 mb-1">Generated SMS (160 chars max)</div>
+                        <div class="text-xs font-mono text-green-400" id="generated-sms">
+                            FLOOD-RED|ZONE:A7|ACT:EVACUATE-NOW|CALL:112|#2024001
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1" id="sms-char-count">53/160 characters</div>
+                    </div>
+
+                    <button onclick="buildSMS()" class="btn-primary w-full mt-3 py-2 rounded-lg text-sm">
+                        Build SMS
+                    </button>
+                </div>
+            </div>
+
+            <!-- Delivery Queue -->
+            <div class="glass rounded-xl p-5 mt-6">
+                <h3 class="font-bold mb-4">📋 Delivery Queue</h3>
+                <div class="space-y-2" id="delivery-queue">
+                    <div class="flex items-center justify-between glass rounded-lg p-3">
+                        <div class="flex items-center gap-3">
+                            <span class="status-dot bg-green-400"></span>
+                            <span class="text-sm">+91-9876543210</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-400">Zone A</span>
+                            <span class="text-xs bg-green-900 text-green-400 px-2 py-1 rounded">Delivered</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between glass rounded-lg p-3">
+                        <div class="flex items-center gap-3">
+                            <span class="status-dot bg-yellow-400 pulse"></span>
+                            <span class="text-sm">+91-9876543211</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-400">Zone B</span>
+                            <span class="text-xs bg-yellow-900 text-yellow-400 px-2 py-1 rounded">Sending...</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between glass rounded-lg p-3">
+                        <div class="flex items-center gap-3">
+                            <span class="status-dot bg-red-400"></span>
+                            <span class="text-sm">+91-9876543212</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-400">Zone C</span>
+                            <span class="text-xs bg-red-900 text-red-400 px-2 py-1 rounded">Failed - Retry</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE: TRACKER -->
+        <div id="page-tracker" class="p-6 hidden">
+            <h2 class="text-2xl font-bold mb-2">Delivery & Acknowledgement Tracker</h2>
+            <p class="text-gray-400 mb-6">Monitor alert delivery and acknowledgement status</p>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-5 gap-4 mb-6">
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-black">1,250</div>
+                    <div class="text-xs text-gray-400 mt-1">Total Sent</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-black text-green-400">1,175</div>
+                    <div class="text-xs text-gray-400 mt-1">Delivered</div>
+                    <div class="text-xs text-green-400">94%</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-black text-blue-400">1,050</div>
+                    <div class="text-xs text-gray-400 mt-1">Read</div>
+                    <div class="text-xs text-blue-400">84%</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-black text-orange-400">980</div>
+                    <div class="text-xs text-gray-400 mt-1">Acknowledged</div>
+                    <div class="text-xs text-orange-400">78%</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-black text-red-400">75</div>
+                    <div class="text-xs text-gray-400 mt-1">Failed</div>
+                    <div class="text-xs text-red-400">6%</div>
+                </div>
+            </div>
+
+            <!-- Progress Bars -->
+            <div class="glass rounded-xl p-5 mb-6">
+                <h3 class="font-bold mb-4">📊 Delivery Pipeline</h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Sent</span><span class="text-green-400">100%</span>
+                        </div>
+                        <div class="h-3 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-red-500 to-orange-500 rounded-full" style="width:100%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Delivered</span><span class="text-green-400">94%</span>
+                        </div>
+                        <div class="h-3 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full" style="width:94%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Read</span><span class="text-blue-400">84%</span>
+                        </div>
+                        <div class="h-3 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-yellow-500 to-green-500 rounded-full" style="width:84%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Acknowledged</span><span class="text-orange-400">78%</span>
+                        </div>
+                        <div class="h-3 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-green-500 rounded-full" style="width:78%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recipient Table -->
+            <div class="glass rounded-xl p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold">👥 Recipient Status</h3>
+                    <button onclick="exportCSV()" class="glass border border-gray-600 text-sm px-4 py-2 rounded-lg">
+                        📥 Export CSV
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-gray-400 border-b border-gray-700">
+                                <th class="text-left py-2 px-3">Recipient</th>
+                                <th class="text-left py-2 px-3">Zone</th>
+                                <th class="text-left py-2 px-3">Channel</th>
+                                <th class="text-left py-2 px-3">Sent</th>
+                                <th class="text-left py-2 px-3">Status</th>
+                                <th class="text-left py-2 px-3">Ack</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recipient-table">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-xl hidden slide-in z-50">
+    ✅ Action completed!
+</div>
+
+<script>
+// ============================================
+// GLOBAL STATE
+// ============================================
+const AppState = {
+    currentAlert: null,
+    currentType: 'flood',
+    currentNetwork: 'full',
+    translations: {}
+};
+
+// Sample Alerts
+const SAMPLE_ALERTS = {
+    flood: {
+        type: 'flood',
+        severity: 'critical',
+        area: 'Zone A, District 5',
+        text: `OFFICIAL FLOOD WARNING - METEOROLOGICAL DEPARTMENT OF INDIA
+        
+Pursuant to the hydro-meteorological assessment conducted by the Central Water Commission and the National Disaster Management Authority (NDMA), it has been determined that the Brahmaputra River basin is experiencing unprecedented precipitation levels exceeding 847mm in a 72-hour period, resulting in critical fluvial inundation risks affecting riparian communities within a 15km radius of the primary watercourse.
+
+Affected zones: A7, B3, C9, D2 (GPS coordinates: 26.1445°N, 91.7362°E)
+Risk assessment: Catastrophic (Category 4)
+Estimated water level: 3.2m above danger mark
+Time to peak: 4-6 hours
+
+MANDATORY EVACUATION ORDER: All residents in designated flood plains must immediately relocate to pre-designated relief camps. Non-compliance may result in administrative action under the Disaster Management Act, 2005.
+
+Emergency Contact: 1070 | 112 | District EOC: 0361-2237221`,
+        simplified: `🚨 FLOOD WARNING - LEAVE NOW!
+
+Water levels are dangerously HIGH and rising FAST.
+
+📍 WHERE: Zone A, District 5 (Areas A7, B3, C9, D2)
+⚠️ HOW BAD: VERY DANGEROUS - Water is 3 meters above safe level
+⏰ WHEN: You must leave in the NEXT 4 HOURS
+
+✅ WHAT TO DO:
+• Leave your home RIGHT NOW
+• Go to the relief camp on high ground
+• Take: ID, medicine, water, food for 3 days
+• Help your neighbors, especially elderly people
+
+📞 CALL FOR HELP: 112 (Emergency) | 1070 (Flood Helpline)
+
+⚠️ DO NOT: Stay in basement • Cross flooded roads • Ignore this warning`
+    },
+    cyclone: {
+        type: 'cyclone',
+        severity: 'high',
+        area: 'Coastal Region, Bay of Bengal',
+        text: `CYCLONE WARNING - INDIA METEOROLOGICAL DEPARTMENT
+        
+Severe Cyclonic Storm BIPARJOY is currently located at 18.5°N, 87.3°E, approximately 380km from the coast. The system is moving NNW at 15 kmph. Wind speed: 120-140 kmph with gusts up to 155 kmph.
+
+Expected landfall: 36-48 hours. Heavy to very heavy rainfall expected. Storm surge of 2-3 meters above astronomical tide. 
+
+Coastal districts on HIGH ALERT. Fishermen advised not to venture into sea.`,
+        simplified: `🌀 CYCLONE ALERT - GET READY!
+
+A VERY STRONG storm is coming toward the coast.
+
+📍 WHERE: All coastal areas
+⚠️ HOW BAD: Winds up to 155 km/h, Big waves 2-3 meters
+⏰ WHEN: Storm arrives in 36-48 hours
+
+✅ WHAT TO DO:
+• Prepare your emergency bag NOW
+• Stock food and water for 5 days
+• Know your nearest shelter location
+• Stay indoors when storm arrives
+• Do NOT go near the sea
+
+📞 CALL: 112 | Coastguard: 1554`
+    },
+    fire: {
+        type: 'fire',
+        severity: 'medium',
+        area: 'District B, Northern Forest Area',
+        text: `FOREST FIRE ALERT - STATE FIRE EMERGENCY SERVICES
+
+Active wildfire detected in northern forest zone. Fire spread rate: High. Wind direction favoring spread toward residential areas. Evacuation advisory issued for zones within 5km radius.`,
+        simplified: `🔥 FIRE ALERT - STAY READY!
+
+A forest fire is spreading near residential areas.
+
+📍 WHERE: District B, North Zone (5km radius)
+⚠️ HOW BAD: Fire spreading fast toward homes
+⏰ WHEN: Monitor every 30 minutes
+
+✅ WHAT TO DO:
+• Pack emergency bag NOW
+• Know your exit routes
+• Close all windows and doors
+• Be ready to leave quickly if told
+
+📞 FIRE: 101 | Emergency: 112`
+    }
+};
+
+// Translations (simulated)
+const TRANSLATIONS = {
+    hindi: {
+        flood: `🚨 बाढ़ की चेतावनी - अभी निकलें!
+
+पानी का स्तर खतरनाक रूप से ऊंचा है।
+
+📍 कहाँ: जोन A, जिला 5
+⚠️ कितना खतरनाक: बहुत खतरनाक
+⏰ कब तक: अगले 4 घंटों में निकलें
+
+✅ क्या करें:
+• अभी घर छोड़ें
+• राहत शिविर जाएं
+• 112 पर कॉल करें`,
+        cyclone: `🌀 चक्रवात चेतावनी - तैयार रहें!
+
+बहुत तेज़ तूफान आ रहा है।
+
+📍 कहाँ: तटीय क्षेत्र
+⏰ कब: 36-48 घंटों में
+📞 फोन करें: 112`
+    },
+    bengali: {
+        flood: `🚨 বন্যা সতর্কবার্তা - এখনই সরুন!
+
+জলের স্তর বিপজ্জনকভাবে উচ্চ।
+
+📍 কোথায়: জোন A, জেলা 5
+⚠️ কতটা বিপজ্জনক: অত্যন্ত বিপজ্জনক
+⏰ কখন: পরবর্তী 4 ঘন্টায় সরুন
+
+✅ কী করবেন:
+• এখনই বাড়ি ছাড়ুন
+• 112 এ ফোন করুন`
+    },
+    tamil: {
+        flood: `🚨 வெள்ள எச்சரிக்கை - இப்போதே செல்லுங்கள்!
+
+நீர் மட்டம் ஆபத்தான அளவில் உயர்ந்துள்ளது.
+
+📍 எங்கே: மண்டலம் A
+⚠️ எவ்வளவு ஆபத்து: மிகவும் ஆபத்தானது
+⏰ எப்போது: அடுத்த 4 மணி நேரத்தில்
+
+✅ என்ன செய்ய வேண்டும்:
+• இப்போதே வீட்டை விடுங்கள்
+• 112 ஐ அழையுங்கள்`
+    },
+    spanish: {
+        flood: `🚨 ALERTA DE INUNDACIÓN - ¡EVACÚE AHORA!
+
+Los niveles de agua están peligrosamente altos.
+
+📍 DÓNDE: Zona A, Distrito 5
+⚠️ GRAVEDAD: MUY PELIGROSO
+⏰ CUÁNDO: Salga en las próximas 4 horas
+
+✅ QUÉ HACER:
+• Abandone su hogar AHORA
+• Vaya al campamento de refugio
+• Llame al 112`
+    },
+    french: {
+        flood: `🚨 ALERTE INONDATION - ÉVACUEZ MAINTENANT!
+
+Les niveaux d'eau sont dangereusement élevés.
+
+📍 OÙ: Zone A, District 5
+⚠️ GRAVITÉ: TRÈS DANGEREUX
+⏰ QUAND: Partez dans les 4 prochaines heures
+
+✅ QUE FAIRE:
+• Quittez votre maison MAINTENANT
+• Appelez le 112`
+    },
+    arabic: {
+        flood: `🚨 تحذير فيضانات - اخرج الآن!
+
+مستويات المياه خطيرة للغاية.
+
+📍 أين: المنطقة A
+⚠️ الخطورة: خطير جداً
+⏰ متى: اخرج خلال 4 ساعات
+
+✅ ماذا تفعل:
+• اترك منزلك الآن
+• اتصل بـ 112`
+    },
+    telugu: {
+        flood: `🚨 వరద హెచ్చరిక - ఇప్పుడే వెళ్ళండి!
+
+నీటి మట్టం ప్రమాదకరంగా ఉంది.
+
+📍 ఎక్కడ: జోన్ A
+⚠️ ఎంత ప్రమాదం: చాలా ప్రమాదకరం
+⏰ ఎప్పుడు: 4 గంటల్లో వెళ్ళండి
+
+✅ ఏం చేయాలి:
+• ఇప్పుడే ఇంటి నుండి వెళ్ళండి
+• 112 కి కాల్ చేయండి`
+    },
+    malay: {
+        flood: `🚨 AMARAN BANJIR - PERGI SEKARANG!
+
+Paras air sangat berbahaya.
+
+📍 DI MANA: Zon A, Daerah 5
+⚠️ BAHAYA: SANGAT BERBAHAYA
+⏰ BILA: Pergi dalam 4 jam
+
+✅ APA YANG PERLU DILAKUKAN:
+• Tinggalkan rumah SEKARANG
+• Hubungi 112`
+    }
+};
+
+// Recipient Data
+const RECIPIENTS = [
+    {id:'R001', name:'Amit Kumar', zone:'A', channel:'SMS', time:'09:15', status:'read', ack:'Yes'},
+    {id:'R002', name:'Priya Sharma', zone:'A', channel:'App', time:'09:15', status:'delivered', ack:'No'},
+    {id:'R003', name:'Ravi Das', zone:'B', channel:'SMS', time:'09:16', status:'read', ack:'Yes'},
+    {id:'R004', name:'Fatima Begum', zone:'B', channel:'Radio', time:'09:16', status:'delivered', ack:'No'},
+    {id:'R005', name:'John Xavier', zone:'C', channel:'SMS', time:'09:17', status:'failed', ack:'No'},
+    {id:'R006', name:'Lakshmi Devi', zone:'A', channel:'App', time:'09:15', status:'acknowledged', ack:'Yes'},
+    {id:'R007', name:'Mohammed Ali', zone:'C', channel:'SMS', time:'09:18', status:'read', ack:'Yes'},
+    {id:'R008', name:'Sunita Patel', zone:'B', channel:'App', time:'09:16', status:'acknowledged', ack:'Yes'},
+];
+
+// ============================================
+// NAVIGATION
+// ============================================
+function showPage(page) {
+    // Hide all pages
+    document.querySelectorAll('[id^="page-"]').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+    // Show selected page
+    const pageEl = document.getElementById('page-' + page);
+    if (pageEl) pageEl.classList.remove('hidden');
+
+    // Activate nav
+    const navEl = document.getElementById('nav-' + page);
+    if (navEl) navEl.classList.add('active');
+
+    // Update title
+    const titles = {
+        'dashboard': 'Dashboard',
+        'alert-input': 'Create Alert',
+        'plain-language': 'Plain Language Processor',
+        'translator': 'Multi-Language Translator',
+        'visual': 'Visual Generator',
+        'sms': 'SMS & Low-Bandwidth Simulator',
+        'tracker': 'Delivery Tracker'
+    };
+    document.getElementById('page-title').textContent = titles[page] || page;
+
+    // Special init
+    if (page === 'dashboard') initCharts();
+    if (page === 'tracker') renderRecipientTable();
+    if (page === 'visual') generateVisual();
+}
+
+// ============================================
+// ALERT INPUT
+// ============================================
+function selectType(btn, type) {
+    document.querySelectorAll('.type-btn').forEach(b => {
+        b.classList.remove('border-blue-500');
+        b.classList.add('border-transparent');
+    });
+    btn.classList.add('border-blue-500');
+    btn.classList.remove('border-transparent');
+    AppState.currentType = type;
+}
+
+function loadSampleAlert(type) {
+    const sample = SAMPLE_ALERTS[type];
+    if (!sample) return;
+    
+    AppState.currentAlert = sample;
+    AppState.currentType = type;
+    
+    const textarea = document.getElementById('official-alert');
+    const areaInput = document.getElementById('affected-area');
+    if (textarea) textarea.value = sample.text;
+    if (areaInput) areaInput.value = sample.area;
+
+    updateCharCount();
+    showToast('Sample alert loaded! Click Process Alert.');
+}
+
+function updateCharCount() {
+    const textarea = document.getElementById('official-alert');
+    const counter = document.getElementById('char-count');
+    if (textarea && counter) {
+        counter.textContent = textarea.value.length + ' characters';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const textarea = document.getElementById('official-alert');
+    if (textarea) textarea.addEventListener('input', updateCharCount);
+});
+
+function processAlert() {
+    const alertText = document.getElementById('official-alert');
+    const areaInput = document.getElementById('affected-area');
+    const severity = document.getElementById('severity');
+    
+    if (!alertText || !alertText.value.trim()) {
+        showToast('Please enter alert text first!', 'error');
+        return;
+    }
+
+    AppState.currentAlert = {
+        type: AppState.currentType,
+        severity: severity ? severity.value : 'critical',
+        area: areaInput ? areaInput.value : 'Unknown',
+        text: alertText.value,
+        simplified: SAMPLE_ALERTS[AppState.currentType]?.simplified || simplifyText(alertText.value)
+    };
+
+    // Update other pages
+    updatePlainLanguagePage();
+    updateTranslatorPage();
+
+    showToast('Alert processed! Check Plain Language tab.');
+    setTimeout(() => showPage('plain-language'), 1500);
+}
+
+function simplifyText(text) {
+    return `🚨 EMERGENCY ALERT - ACTION REQUIRED!
+
+${text.substring(0, 200)}...
+
+✅ WHAT TO DO:
+• Follow official instructions
+• Contact emergency services
+• Stay tuned for updates
+
+📞 EMERGENCY: 112`;
+}
+
+// ============================================
+// PLAIN LANGUAGE
+// ============================================
+function updatePlainLanguagePage() {
+    if (!AppState.currentAlert) return;
+    
+    const origDisplay = document.getElementById('original-text-display');
+    const simpDisplay = document.getElementById('simplified-text-display');
+    
+    if (origDisplay) origDisplay.textContent = AppState.currentAlert.text;
+    if (simpDisplay) simpDisplay.innerHTML = AppState.currentAlert.simplified?.replace(/\n/g, '<br>') || '';
+
+    // Update key info
+    const typeData = {
+        flood: {what: 'Flood / Rising Water', where: 'Zone A, District 5', when: 'Next 4 hours', action: 'EVACUATE NOW'},
+        cyclone: {what: 'Cyclone / Storm', where: 'Coastal Region', when: '36-48 hours', action: 'PREPARE & SHELTER'},
+        fire: {what: 'Forest Fire', where: 'District B, North', when: 'Monitor every 30 min', action: 'BE READY TO LEAVE'},
+        earthquake: {what: 'Earthquake', where: 'Affected Zone', when: 'Immediate', action: 'DUCK COVER HOLD'}
+    };
+    
+    const info = typeData[AppState.currentAlert.type] || typeData.flood;
+    
+    const els = ['what','where','when','action'];
+    els.forEach(key => {
+        const el = document.getElementById('key-' + key);
+        if (el) el.textContent = info[key];
+    });
+}
+
+function loadSampleAndProcess() {
+    loadSampleAlert('flood');
+    setTimeout(() => {
+        AppState.currentAlert = SAMPLE_ALERTS['flood'];
+        updatePlainLanguagePage();
+        showToast('Sample processed!');
+    }, 100);
+}
+
+function copyText(elementId) {
+    const el = document.getElementById(elementId);
+    if (el) {
+        navigator.clipboard.writeText(el.innerText);
+        showToast('Text copied to clipboard!');
+    }
+}
+
+// ============================================
+// TRANSLATOR
+// ============================================
+function updateTranslatorPage() {
+    if (!AppState.currentAlert) return;
+    const sourceEl = document.getElementById('source-for-translation');
+    if (sourceEl) {
+        sourceEl.textContent = AppState.currentAlert.simplified || AppState.currentAlert.text;
+    }
+}
+
+function translateTo(language) {
+    if (!AppState.currentAlert) {
+        loadSampleAlert('flood');
+        setTimeout(() => translateTo(language), 200);
+        return;
+    }
+    
+    const type = AppState.currentAlert.type;
+    const el = document.getElementById('trans-' + language);
+    if (!el) return;
+    
+    el.innerHTML = '<span class="text-yellow-400">Translating...</span>';
+    
+    setTimeout(() => {
+        const trans = TRANSLATIONS[language]?.[type] || 
+            TRANSLATIONS[language]?.flood || 
+            `[${language.toUpperCase()}] Alert: ${AppState.currentAlert.simplified?.substring(0, 100)}...`;
+        
+        el.innerHTML = trans.substring(0, 150).replace(/\n/g, '<br>') + '...';
+        AppState.translations[language] = trans;
+        showToast(`Translated to ${language}!`);
+    }, 800);
+}
+
+function translateAll() {
+    if (!AppState.currentAlert) {
+        loadSampleAlert('flood');
+        setTimeout(translateAll, 200);
+        return;
+    }
+    
+    const langs = ['hindi','bengali','tamil','telugu','spanish','french','arabic','malay'];
+    langs.forEach((lang, idx) => {
+        setTimeout(() => translateTo(lang), idx * 300);
+    });
+    showToast('Translating to all languages...');
+}
+
+// ============================================
+// VISUAL GENERATOR
+// ============================================
+function generateVisual() {
+    const canvas = document.getElementById('visual-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    const alert = AppState.currentAlert || SAMPLE_ALERTS.flood;
+    const type = alert.type || 'flood';
+    
+    const configs = {
+        flood: { color: '#0066CC', bg: '#001133', icon: '🌊', title: 'FLOOD WARNING', action: 'EVACUATE NOW' },
+        cyclone: { color: '#FF6600', bg: '#1A0A00', icon: '🌀', title: 'CYCLONE ALERT', action: 'SEEK SHELTER' },
+        fire: { color: '#FF3300', bg: '#1A0500', icon: '🔥', title: 'FIRE ALERT', action: 'STAY READY' },
+        earthquake: { color: '#8B4513', bg: '#0D0A00', icon: '🏔️', title: 'EARTHQUAKE', action: 'DROP-COVER-HOLD' }
+    };
+    
+    const config = configs[type] || configs.flood;
+    
+    // Background
+    ctx.fillStyle = config.bg;
+    ctx.fillRect(0, 0, 400, 400);
+    
+    // Header bar
+    ctx.fillStyle = config.color;
+    ctx.fillRect(0, 0, 400, 80);
+    
+    // Title
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 22px Inter, Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(config.title, 200, 50);
+    
+    // Icon (emoji representation)
+    ctx.font = '80px Arial';
+    ctx.fillText(config.icon, 200, 175);
+    
+    // Severity badge
+    ctx.fillStyle = '#FF3A3A';
+    ctx.beginPath();
+    ctx.roundRect(100, 200, 200, 40, 20);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 16px Inter, Arial';
+    ctx.fillText('⚠️ CRITICAL DANGER', 200, 225);
+    
+    // Action
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 24px Inter, Arial';
+    ctx.fillText(config.action, 200, 285);
+    
+    // Info boxes
+    const boxData = [
+        { label: 'LOCATION', value: alert.area?.substring(0, 15) || 'Zone A' },
+        { label: 'CALL', value: '📞 112' }
+    ];
+    
+    boxData.forEach((box, i) => {
+        const x = 20 + i * 200;
+        ctx.strokeStyle = config.color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, 310, 180, 60);
+        ctx.fillStyle = '#888888';
+        ctx.font = '11px Inter, Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(box.label, x + 90, 330);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 14px Inter, Arial';
+        ctx.fillText(box.value, x + 90, 355);
+    });
+    
+    // Footer
+    ctx.fillStyle = config.color;
+    ctx.fillRect(0, 385, 400, 15);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('OFFICIAL GOVERNMENT ALERT - LastMile Alert System', 200, 396);
+}
+
+function generateIconVersion() {
+    const alert = AppState.currentAlert || SAMPLE_ALERTS.flood;
+    const icons = {flood: '🌊', cyclone: '🌀', fire: '🔥', earthquake: '🏔️'};
+    const titles = {flood: 'FLOOD', cyclone: 'CYCLONE', fire: 'FIRE', earthquake: 'EARTHQUAKE'};
+    
+    const mainIcon = document.getElementById('main-icon');
+    const iconTitle = document.getElementById('icon-title');
+    const iconSubtitle = document.getElementById('icon-subtitle');
+    const iconLocation = document.getElementById('icon-location');
+    const iconTime = document.getElementById('icon-time');
+    const iconAction = document.getElementById('icon-action');
+    
+    if (mainIcon) mainIcon.textContent = icons[alert.type] || '⚠️';
+    if (iconTitle) iconTitle.textContent = titles[alert.type] || 'EMERGENCY';
+    if (iconSubtitle) iconSubtitle.textContent = 'Critical Warning';
+    if (iconLocation) iconLocation.textContent = alert.area?.substring(0, 12) || 'Zone A';
+    if (iconTime) iconTime.textContent = 'Act NOW';
+    if (iconAction) iconAction.textContent = alert.type === 'flood' ? 'Evacuate' : 'Take Cover';
+    
+    showToast('Icon version generated!');
+}
+
+function downloadCanvas() {
+    const canvas = document.getElementById('visual-canvas');
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'emergency-alert.png';
+    link.href = canvas.toDataURL();
+    link.click();
+    showToast('Alert image downloaded!');
+}
+
+// ============================================
+// SMS SIMULATOR
+// ============================================
+function setNetwork(type) {
+    AppState.currentNetwork = type;
+    
+    const configs = {
+        full: { name: 'Full Internet', speed: 'Speed: Unlimited', signal: '▲▲▲▲', signalColor: 'text-green-400', delay: 0 },
+        '3g': { name: '3G Network', speed: 'Speed: ~1 Mbps', signal: '▲▲▲░', signalColor: 'text-yellow-400', delay: 2000 },
+        '2g': { name: '2G Network', speed: 'Speed: ~64 Kbps', signal: '▲▲░░', signalColor: 'text-orange-400', delay: 5000 },
+        sms: { name: 'SMS Only', speed: 'Speed: SMS mode', signal: '▲░░░', signalColor: 'text-red-400', delay: 3000 },
+        offline: { name: 'Offline Relay', speed: 'Speed: Community relay', signal: '░░░░', signalColor: 'text-gray-500', delay: 10000 }
+    };
+    
+    const config = configs[type] || configs.full;
+    
+    const networkEl = document.getElementById('current-network');
+    const speedEl = document.getElementById('network-speed');
+    const signalEl = document.getElementById('signal-display');
+    
+    if (networkEl) networkEl.textContent = config.name;
+    if (speedEl) speedEl.textContent = config.speed;
+    if (signalEl) {
+        signalEl.textContent = config.signal;
+        signalEl.className = 'text-xs ' + config.signalColor;
+    }
+    
+    showToast(`Network set to: ${config.name}`);
+}
+
+function simulateSend() {
+    const delays = { full: 500, '3g': 2000, '2g': 5000, sms: 3000, offline: 10000 };
+    const delay = delays[AppState.currentNetwork] || 500;
+    
+    const timeEl = document.getElementById('delivery-time');
+    if (timeEl) timeEl.textContent = 'Sending...';
+    
+    const phoneMsg = document.getElementById('phone-message');
+    if (phoneMsg) phoneMsg.classList.add('opacity-50');
+    
+    setTimeout(() => {
+        if (timeEl) timeEl.textContent = `Delivered after ${delay/1000}s`;
+        if (phoneMsg) phoneMsg.classList.remove('opacity-50');
+        showToast(`Message delivered! (${delay/1000}s delay)`);
+    }, delay);
+}
+
+function buildSMS() {
+    const code = document.getElementById('sms-code')?.value || '';
+    const zone = document.getElementById('sms-zone')?.value || '';
+    const action = document.getElementById('sms-action')?.value || '';
+    const contact = document.getElementById('sms-contact')?.value || '';
+    
+    const sms = `${code}|${zone}|${action}|${contact}|#${Date.now().toString().slice(-6)}`;
+    const smsEl = document.getElementById('generated-sms');
+    const countEl = document.getElementById('sms-char-count');
+    
+    if (smsEl) smsEl.textContent = sms;
+    if (countEl) countEl.textContent = `${sms.length}/160 characters`;
+    
+    showToast('SMS format built!');
+}
+
+// ============================================
+// DELIVERY TRACKER
+// ============================================
+function renderRecipientTable() {
+    const tbody = document.getElementById('recipient-table');
+    if (!tbody) return;
+    
+    const statusConfig = {
+        'acknowledged': { color: 'text-green-400', bg: 'bg-green-900', dot: 'bg-green-400' },
+        'read': { color: 'text-blue-400', bg: 'bg-blue-900', dot: 'bg-blue-400' },
+        'delivered': { color: 'text-yellow-400', bg: 'bg-yellow-900', dot: 'bg-yellow-400' },
+        'failed': { color: 'text-red-400', bg: 'bg-red-900', dot: 'bg-red-400' }
+    };
+    
+    tbody.innerHTML = RECIPIENTS.map(r => {
+        const s = statusConfig[r.status] || statusConfig.delivered;
+        return `
+        <tr class="border-b border-gray-800 hover:bg-gray-800 transition-colors">
+            <td class="py-3 px-3">
+                <div class="flex items-center gap-2">
+                    <span class="status-dot ${s.dot}"></span>
+                    <div>
+                        <div class="font-semibold text-sm">${r.name}</div>
+                        <div class="text-xs text-gray-500">${r.id}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="py-3 px-3 text-sm">Zone ${r.zone}</td>
+            <td class="py-3 px-3 text-sm">${r.channel}</td>
+            <td class="py-3 px-3 text-sm text-gray-400">${r.time}</td>
+            <td class="py-3 px-3">
+                <span class="${s.bg} ${s.color} text-xs px-2 py-1 rounded-full capitalize">${r.status}</span>
+            </td>
+            <td class="py-3 px-3">
+                <span class="${r.ack === 'Yes' ? 'text-green-400' : 'text-gray-500'} text-sm font-semibold">${r.ack}</span>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function exportCSV() {
+    const headers = ['ID', 'Name', 'Zone', 'Channel', 'Time', 'Status', 'Acknowledged'];
+    const rows = RECIPIENTS.map(r => 
+        [r.id, r.name, r.zone, r.channel, r.time, r.status, r.ack].join(',')
+    );
+    const csv = [headers.join(','), ...rows].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'delivery_report.csv';
+    link.click();
+    showToast('CSV exported!');
+}
+
+// ============================================
+// CHARTS
+// ============================================
+function initCharts() {
+    // Delivery Chart
+    const dCtx = document.getElementById('deliveryChart');
+    if (dCtx && !dCtx._chart) {
+        dCtx._chart = new Chart(dCtx, {
+            type: 'line',
+            data: {
+                labels: ['6am','8am','10am','12pm','2pm','4pm','6pm'],
+                datasets: [{
+                    label: 'Delivered',
+                    data: [120, 450, 890, 1100, 1250, 1400, 1550],
+                    borderColor: '#00C853',
+                    backgroundColor: 'rgba(0,200,83,0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#fff' } } },
+                scales: {
+                    x: { ticks: { color: '#888' }, grid: { color: '#333' } },
+                    y: { ticks: { color: '#888' }, grid: { color: '#333' } }
+                }
+            }
+        });
+    }
+
+    // Language Chart
+    const lCtx = document.getElementById('langChart');
+    if (lCtx && !lCtx._chart) {
+        lCtx._chart = new Chart(lCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Hindi', 'English', 'Bengali', 'Tamil', 'Other'],
+                datasets: [{
+                    data: [35, 25, 20, 12, 8],
+                    backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#fff', font: { size: 11 } } } }
+            }
+        });
+    }
+}
+
+// ============================================
+// TOAST NOTIFICATION
+// ============================================
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    
+    toast.textContent = (type === 'error' ? '❌ ' : '✅ ') + message;
+    toast.className = `fixed bottom-4 right-4 ${type === 'error' ? 'bg-red-600' : 'bg-green-600'} text-white px-6 py-3 rounded-xl slide-in z-50`;
+    toast.classList.remove('hidden');
+    
+    setTimeout(() => toast.classList.add('hidden'), 3000);
+}
+
+// ============================================
+// INIT
+// ============================================
+window.onload = () => {
+    initCharts();
+    loadSampleAlert('flood');
+    AppState.currentAlert = SAMPLE_ALERTS.flood;
+    updatePlainLanguagePage();
+    updateTranslatorPage();
+};
+</script>
+
+</body>
+</html>

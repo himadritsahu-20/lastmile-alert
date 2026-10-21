@@ -1,0 +1,7 @@
+import { useEffect } from "react";
+const TONE_STYLES = { success: { icon: "✓", classes: "border-emerald-700 bg-emerald-950/95 text-emerald-200" }, error: { icon: "!", classes: "border-red-700 bg-red-950/95 text-red-200" }, info: { icon: "i", classes: "border-blue-700 bg-blue-950/95 text-blue-200" }, warning: { icon: "⚠", classes: "border-amber-700 bg-amber-950/95 text-amber-200" } };
+export default function Toast({ message, type, tone = "success", onClose }) {
+	const style = TONE_STYLES[type || tone] || TONE_STYLES.success;
+	useEffect(() => { const timeoutId = window.setTimeout(() => onClose?.(), 3500); return () => window.clearTimeout(timeoutId); }, [message, onClose]);
+	return <div className={`fixed bottom-5 right-5 z-50 flex max-w-sm animate-[toast-slide-up_220ms_ease-out] items-start gap-3 rounded-xl border px-4 py-3 text-sm font-bold shadow-2xl backdrop-blur ${style.classes}`} role="status"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full border border-current text-xs">{style.icon}</span><span className="pt-0.5">{message}</span><button type="button" onClick={onClose} className="ml-2 text-lg leading-none opacity-70 hover:opacity-100" aria-label="Close notification">×</button></div>;
+}
